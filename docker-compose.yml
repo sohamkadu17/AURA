@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aura_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      # Use host.docker.internal to allow backend to access Ollama running on the host machine
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - TZ=Asia/Kolkata
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://192.168.1.37:8000
+    container_name: aura_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://192.168.1.37:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  aura_db_data:
