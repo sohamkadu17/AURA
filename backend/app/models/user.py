@@ -78,4 +78,20 @@ class Task(Base):
     user = relationship("User", back_populates="tasks")
 
 
+class LongTermMemory(Base):
+    """
+    Key facts the agent should remember about the user long-term.
+    e.g. semester, subjects, preferences, important dates.
+    These are stored as structured key-value facts.
+    """
+    __tablename__ = "long_term_memories"
 
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    category = Column(String(100), nullable=False)    # e.g. "preference", "schedule", "goal"
+    key = Column(String(255), nullable=False)          # e.g. "preferred_language"
+    value = Column(Text, nullable=False)              # e.g. "Python"
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user = relationship("User", back_populates="memories")
