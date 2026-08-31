@@ -85,7 +85,7 @@ class Task(Base):
     description = Column(Text, nullable =True)
     due_date = Column(DateTime(timezone=True), nullable = True)
     is_completed = Column(Boolean, default=False)
-    priority = Column(String(20), default=="medium")
+    priority = Column(String(20), default="medium")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="tasks")
