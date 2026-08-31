@@ -60,22 +60,36 @@ class Message(Base):
     conversation = relationship("Conversation", back_populates="messages")
 
 
+# class Task(Base):
+#     """
+#     Assignment / reminder task created by the agent.
+#     """
+#     __tablename__ = "tasks"
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+#     title = Column(String(255), nullable=False)
+#     description = Column(Text, nullable=True)
+#     due_date = Column(DateTime(timezone=True), nullable=True)
+#     is_completed = Column(Boolean, default=False)
+#     priority = Column(String(20), default="medium")   # 'low' | 'medium' | 'high'
+#     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+#     user = relationship("User", back_populates="tasks"
 class Task(Base):
-    """
-    Assignment / reminder task created by the agent.
-    """
-    __tablename__ = "tasks"
+    __tablename__ ="tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    due_date = Column(DateTime(timezone=True), nullable=True)
+    user_id = Column(Integer,ForeignKey("users.id"),nullable= False)
+    title =Column(String(255), nullable = False)
+    description = Column(Text, nullable =True)
+    due_date = Column(DateTime(timezone=True), nullable = True)
     is_completed = Column(Boolean, default=False)
-    priority = Column(String(20), default="medium")   # 'low' | 'medium' | 'high'
+    priority = Column(String(20), default=="medium")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="tasks")
+
 
 
 class LongTermMemory(Base):
