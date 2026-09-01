@@ -44,50 +44,52 @@ logger = logging.getLogger(__name__)
 # ── Embedding Model (singleton) ────────────────────────────────────────────────
 # bge-small-en-v1.5 is only ~130 MB and very fast on CPU.
 # Downloaded automatically from HuggingFace on first use.
+
 _embeddings: Optional[HuggingFaceEmbeddings] = None
 
 def get_embeddings() -> HuggingFaceEmbeddings:
     global _embeddings
     if _embeddings is None:
-        logger.info(f"[RAG] Loading embedding model: {settings.EMBEDDING_MODEL}")
+        logger.info(f"[RAG] Loading embedding model: (settings.EMBEDDING_MODEL)")
         _embeddings = HuggingFaceEmbeddings(
             model_name=settings.EMBEDDING_MODEL,
-            model_kwargs={"device": "cpu"},   # safe default; GPU optional
-            encode_kwargs={"normalize_embeddings": True},
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True}
         )
+
     return _embeddings
 
 
 # ── ChromaDB Vector Store ──────────────────────────────────────────────────────
-def get_vectorstore(collection_name: str = "aura_notes") -> Chroma:
-    """Return a LangChain Chroma vectorstore backed by a local persistent directory."""
+
+def get_vectorstore(collection_name: str= "aura_notes") -> Chroma:
+    """Return a langchain chroma vectorstore backed by a local persistent directory."""
     return Chroma(
         collection_name=collection_name,
-        embedding_function=get_embeddings(),
-        persist_directory=settings.CHROMA_PERSIST_DIR,
+        embedding_function = get_embeddings(),
+        persist_directory = settings.CHROMA_PERSIST_DIR,
     )
 
 
-# ── Document Ingestion ─────────────────────────────────────────────────────────
-def ingest_file(file_path: str, metadata: Optional[dict] = None) -> int:
+# # ── Document Ingestion ─────────────────────────────────────────────────────────
+
+
+def injeect_file(file_path:str, metadata : Optional[dict] = None) -> int :
     """
-    Load a PDF or .txt file, chunk it, embed it, and store in ChromaDB.
+    Loads a pdf , Txt, chunk it, embed it , and store it in Chroma.
+    Args : file_path :Absolute path tp the uploaded file.
+    metadata: optional dict of metadata to attack to each chunk
+    eg{"subject":"dbms", "User_id": 1}.
 
-    Args:
-        file_path: Absolute path to the uploaded file.
-        metadata:  Optional dict of metadata to attach to each chunk
-                   (e.g. {"subject": "DBMS", "user_id": 1}).
-
-    Returns:
-        Number of chunks added to the vector store.
+    returns Number of Chunks added to the vectore store.
     """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    logger.info(f"[RAG] Ingesting: {path.name}")
+    logger.info(f"[RAG] Ingesting : {file_path}")
 
-    # Load document
+    #load document
     if path.suffix.lower() == ".pdf":
         loader = PyPDFLoader(str(path))
     else:
@@ -95,21 +97,22 @@ def ingest_file(file_path: str, metadata: Optional[dict] = None) -> int:
 
     docs: list[Document] = loader.load()
 
-    # Attach extra metadata
+    #Attach extra metadata 
     if metadata:
         for doc in docs:
             doc.metadata.update(metadata)
 
-    # Chunk the text
+    #CHunk the text
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=settings.CHUNK_SIZE,
-        chunk_overlap=settings.CHUNK_OVERLAP,
-        separators=["\n\n", "\n", ".", " "],
+        chunk_size = settings.CHUNK_SIZE,
+        chunk_overlap = settings.CHUNK_OVERLAP,
+        separators =["\n\n","\n","."," "]
     )
-    chunks = splitter.split_documents(docs)
-    logger.info(f"[RAG] {path.name} → {len(chunks)} chunks")
 
-    # Embed + store
+    chunks = splitter.split_documents(docs)
+    logger.info(f"[RAG] {path.name} -> {len(chunks)} chunks")
+
+    #embed = store
     vectorstore = get_vectorstore()
     vectorstore.add_documents(chunks)
     logger.info(f"[RAG] Stored {len(chunks)} chunks in ChromaDB")
